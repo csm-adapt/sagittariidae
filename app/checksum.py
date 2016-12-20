@@ -36,7 +36,7 @@ def get_digester(method):
     Retrieve a digester that implements the checksum `method`.  Returns an
     instance of a hashlib digester.
     """
-    digesterfn = DIGESTERS[method]
+    digesterfn = DIGESTERS.get(method, None)
     if digesterfn is None:
         raise UnsupportedChecksumMethod(method)
     else:
