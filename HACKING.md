@@ -14,6 +14,13 @@ $ pip install -r requirements.txt
 ```
 
 ## Testing
+Configure the application for local development and testing:
+
+```
+$ export FLASK_APP=app/app.py # Tell Flask what the main application file is
+$ export FLASK_TESTING=1 # Configure local log and DB.
+```
+
 To run the tests and get a nice report:
 
 ```
