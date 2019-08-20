@@ -10,7 +10,7 @@ def _define_status_code_constants():
     more readable and self-documenting.
     """
     # cf. https://github.com/pallets/werkzeug/blob/06972c37170af14b7e88c7c325b3dec01efefa04/werkzeug/http.py#L84
-    for k,v in werkzeug.http.HTTP_STATUS_CODES.iteritems():
+    for k,v in werkzeug.http.HTTP_STATUS_CODES.items():
         status_code = k
         status_string = '_'.join(['HTTP',
                                   str(status_code),

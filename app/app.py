@@ -2,9 +2,9 @@
 import logging
 import time
 
-from flask            import Flask
+from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from werkzeug.wsgi    import SharedDataMiddleware
+from werkzeug.middleware.shared_data import SharedDataMiddleware
 
 from config import STATIC_ROOT, STORE_PATH
 
@@ -53,7 +53,7 @@ for handler in handlers:
     handler.setLevel(loglevel)
     handler.setFormatter(formatter)
 
-    for logger, defined_level in loggers.iteritems():
+    for logger, defined_level in loggers.items():
         if defined_level is None:
             logger.setLevel(loglevel)
         else:
@@ -65,16 +65,16 @@ try:
 
     # Load "leaf" modules.  These may depend only on `app.app` which has now
     # been initialised
-    import models
+    from . import models
 
     # Lead "middleware" modules.  These may depend on both leaf modules and on
     # `app.app`.
-    import sampleresolver
-    import views
+    from . import sampleresolver
+    from . import views
 
     # And we're done
     logger.info('Sagittariidae is ready to serve.')
-except Exception, e:
+except Exception as e:
     logger.error('Startup error', exc_info=e)
     import sys
     sys.exit(1)

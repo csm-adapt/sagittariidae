@@ -8,7 +8,7 @@ import app.models   as models
 import app.sweepers as sweepers
 
 from app.file import touch
-from fixtures import *
+from .fixtures import *
 
 
 @pytest.fixture(scope='function')

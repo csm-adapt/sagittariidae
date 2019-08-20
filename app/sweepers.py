@@ -13,8 +13,8 @@ import os
 import shutil
 import sys
 
-import app as sagittariidae
-import models
+from . import app as sagittariidae
+from . import models
 
 
 logger = sagittariidae.app.logger
@@ -27,7 +27,7 @@ class Sweeper(object):
     def sweep(self):
         try:
             self.run()
-        except Exception, e:
+        except Exception as e:
             logger.error('Unhandled exception in sweeper %s', self, exc_info=e)
 
 
@@ -57,7 +57,7 @@ class ArchivedFileDirSweeper(Sweeper):
         for f in files:
             try:
                 self._clean_(f, logger)
-            except Exception, e:
+            except Exception as e:
                 logger.error('Error cleaning upload directory for file %s', f, exc_info=e)
 
 
@@ -84,7 +84,7 @@ class StagedFileSweeper(Sweeper):
         for f in files:
             try:
                 self._complete_(f)
-            except Exception, e:
+            except Exception as e:
                 logger.error('Error moving file %s', f, exc_info=e)
 
 
@@ -97,7 +97,7 @@ def make_sweeper(c):
             raise Exception('%s is not an implementation of %s' % (c, Sweeper))
         else:
             return i
-    except Exception, e:
+    except Exception as e:
         logger.error('Invalid sweeper class %s', sys.argv[1], exc_info=e)
         raise e
 

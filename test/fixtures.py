@@ -17,16 +17,21 @@ def ws(request):
     fd, fn = tempfile.mkstemp()
     flask_app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + fn
     flask_app.config['TESTING'] = True
-    inst = flask_app.test_client()
+    client = flask_app.test_client()
     with flask_app.app_context():
         models.db.create_all()
-        pass
+        # pass
 
-    def fin():
-        os.close(fd)
-        os.unlink(fn)
-    request.addfinalizer(fin)
-    return inst
+    yield client
+
+    os.close(fd)
+    os.unlink(fn)
+
+    # def fin():
+    #     os.close(fd)
+    #     os.unlink(fn)
+    # request.addfinalizer(fin)
+    # return inst
 
 
 @pytest.fixture(scope='function')

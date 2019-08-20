@@ -16,11 +16,11 @@ from sqlalchemy.orm            import relationship
 from sqlalchemy.orm.attributes import InstrumentedAttribute
 from sqlalchemy.orm.exc        import NoResultFound, MultipleResultsFound
 from sqlalchemy.sql.expression import func
-from urllib                    import quote
+from urllib.parse                    import quote
 
-import http
+from . import http
 
-from app import app, db
+from .app import app, db
 
 
 BAD_URI_PAT  = re.compile("%.{2}|\/|_")
@@ -33,7 +33,7 @@ def inject_obfuscated_id_after_flush_postexec(session, flush_context):
         if m.obfuscated_id is None:
             m.obfuscated_id = m.__hashidgen__.encode(m.id)
         return m
-    return [inject_obfuscated_id(m) for m in session.identity_map.values()]
+    return [inject_obfuscated_id(m) for m in list(session.identity_map.values())]
 
 
 def with_transaction(session, f):
@@ -47,7 +47,7 @@ def with_transaction(session, f):
     try:
         f(session)
         session.commit()
-    except Exception, e:
+    except Exception as e:
         session.rollback()
         raise e
 
@@ -126,8 +126,7 @@ def get_resource(q, abort_not_found=True):
         return r
 
 
-class Project(db.Model):
-    __metaclass__ = ResourceMetaClass
+class Project(db.Model, metaclass=ResourceMetaClass):
     __tablename__ = 'project'
     __hashidgen__ = HashIds('Project')
 
@@ -174,8 +173,7 @@ def add_project(name, sample_mask):
     return Project.query.filter_by(id=p.id).one()
 
 
-class Sample(db.Model):
-    __metaclass__ = ResourceMetaClass
+class Sample(db.Model, metaclass=ResourceMetaClass):
     __tablename__ = 'sample'
     __hashidgen__ = HashIds('Sample')
 
@@ -231,8 +229,7 @@ def add_sample(project_id, name):
     return Sample.query.filter_by(id=s.id).one()
 
 
-class Method(db.Model):
-    __metaclass__ = ResourceMetaClass
+class Method(db.Model, metaclass=ResourceMetaClass):
     __tablename__ = 'method'
     __hashidgen__ = HashIds('Method')
 
@@ -271,8 +268,7 @@ def add_method(name, description):
     return Method.query.filter_by(id=m.id).one()
 
 
-class SampleStage(db.Model):
-    __metaclass__ = ResourceMetaClass
+class SampleStage(db.Model, metaclass=ResourceMetaClass):
     __tablename__ = 'sample_stage'
     __hashidgen__ = HashIds('SampleStage')
 
@@ -382,14 +378,13 @@ class FileStatus(enum.Enum):
     complete = 'complete' # No further action is needed for the file.
 
 
-class SampleStageFile(db.Model):
-    __metaclass__ = ResourceMetaClass
+class SampleStageFile(db.Model, metaclass=ResourceMetaClass):
     __tablename__ = 'sample_stage_file'
     __hashidgen__ = HashIds('SampleStageFile')
 
     relative_source_path = Column(Text, unique=True)
     relative_target_path = Column(Text, unique=True)
-    _status = Column('status', Enum(*FileStatus.__members__.keys()))
+    _status = Column('status', Enum(*list(FileStatus.__members__.keys())))
     # PORTABILITY WARNING: SQLite renders `now` in UTC, which is what we want.
     # This behaviour may not be true for all stores and so may need custom type
     # handling to ensure that timestamps are consistently handled in UTC.

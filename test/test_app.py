@@ -2,8 +2,8 @@
 import json
 
 from app      import models, http
-from fixtures import sample, sample_with_stages, ws
-from utils    import decode_json_string
+from .fixtures import sample, sample_with_stages, ws
+from .utils    import decode_json_string
 
 
 def test_no_projects(ws):

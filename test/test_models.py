@@ -7,7 +7,7 @@ import app
 import app.models as models
 
 from app.file import touch
-from fixtures import *
+from .fixtures import *
 
 
 def test_add_project(ws):

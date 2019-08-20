@@ -6,9 +6,9 @@ from sqlalchemy import Column, Integer
 from app.models import Method, Project, Sample, SampleStage
 from app.models import db
 from app.views  import jsonize
-from utils      import decode_json_string
+from .utils      import decode_json_string
 
-from fixtures   import json_encoder
+from .fixtures   import json_encoder
 
 
 def test_dictify(json_encoder):
@@ -34,5 +34,5 @@ def test_uri_name(json_encoder):
             'f o o'     : 'f-o-o',
             'foo   bar' : 'foo-bar',
             'foo ~ bar' : 'foo-bar'}
-    for kv in iter(spec.items()):
+    for kv in iter(list(spec.items())):
         assert kv[1] == json_encoder._uri_name('FoOby', kv[0]).split('-', 1)[1]

@@ -3,8 +3,9 @@ import threading
 
 from sqlalchemy.orm import aliased
 
-import models
-import app    as sagittariidae
+from . import models
+from . import app    as sagittariidae
+from functools import reduce
 
 class _HashableSample_(object):
     """
@@ -53,7 +54,7 @@ class _Resolver_(threading.Thread):
         try:
             for sample in self.resolve(self.token, self.project.id):
                 self.results.add(_HashableSample_(sample))
-        except Exception, e:
+        except Exception as e:
             sagittariidae.app.logger.error('Unhandled exception in Resolver %s', self, exc_info=e)
 
 
@@ -64,7 +65,7 @@ class _StageAnnotationResolver_(_Resolver_):
             join(models.Sample.sample_stages).\
             filter(models.Sample._project_id == project_id).\
             filter(models.SampleStage.annotation.ilike(token))
-        return map(lambda s: s.sample, q.all())
+        return [s.sample for s in q.all()]
 
 
 class _SampleNameResolver_(_Resolver_):
@@ -86,7 +87,7 @@ class _StageMethodResolver_(_Resolver_):
             filter(models.SampleStage.id == sample_stage_1.id).\
             filter(models.Sample._project_id == project_id).\
             filter(models.Method.name.ilike(token))
-        return map(lambda s: s.sample, q.all())
+        return [s.sample for s in q.all()]
 
 
 _RESOLVER_TYPES_ = [_SampleNameResolver_,
@@ -108,7 +109,7 @@ class SampleTokenResolver():
             resolver.token   = '%%%s%%' % token
             return resolver
 
-        resolvers = map(lambda t: make_resolver(t, token, self.project), _RESOLVER_TYPES_)
+        resolvers = [make_resolver(t, token, self.project) for t in _RESOLVER_TYPES_]
 
         # FIXME!
         #
@@ -134,7 +135,7 @@ class SampleTokenResolver():
         for resolver in resolvers:
             resolver.run()
 
-        candidate_results = map(lambda r: r.results, resolvers)
+        candidate_results = [r.results for r in resolvers]
         return reduce(lambda union, s: union | s, candidate_results, set())
 
 
@@ -142,17 +143,14 @@ class SampleResolver():
 
     def resolve(self, tokens, project_id):
         project = models.get_project(obfuscated_id=project_id)
-        candidate_results = filter(lambda s: len(s) > 0,
-                                   map(lambda t: SampleTokenResolver(project).resolve(t),
-                                       tokens))
+        candidate_results = [s for s in [SampleTokenResolver(project).resolve(t) for t in tokens] if len(s) > 0]
 
         # `reduce` won't reduce with an empty collection without an inital
         # value.  We don't provide an initial value because the only thing that
         # we possibly could provide is an empty set, which would break our
         # selection of the intersection of the results from the resolvers.
         if len(candidate_results) > 0:
-            return map(lambda hashable: hashable.sample,
-                       reduce(lambda intersection, s: intersection & s,
-                              candidate_results))
+            return [hashable.sample for hashable in reduce(lambda intersection, s: intersection & s,
+                              candidate_results)]
         else:
             return []

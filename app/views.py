@@ -1,5 +1,5 @@
 
-import StringIO
+import io
 import glob
 import hashlib
 import json
@@ -9,14 +9,14 @@ import re
 
 from flask          import abort, jsonify, redirect, request
 from werkzeug.utils import secure_filename
-from urllib         import quote
+from urllib.parse         import quote
 
-import checksum
-import file
-import http
+from . import checksum
+from . import file
+from . import http
 
-from app            import app, db, models
-from sampleresolver import SampleResolver
+from .app            import app, db, models
+from .sampleresolver import SampleResolver
 
 
 PART_EXT = "part"
@@ -251,7 +251,7 @@ class DBModelJSONEncoder(json.JSONEncoder):
         """
         def tr(kv):
             return (kv[0].replace('_', '-'), kv[1])
-        return dict(tr(kv) for kv in iter(model.__dict__.items())
+        return dict(tr(kv) for kv in iter(list(model.__dict__.items()))
                     if (not (kv[0].startswith('_') or (kv[0] in exclude))))
 
     def strip_private_fields(self, d):
@@ -330,7 +330,7 @@ def mkdirp(p):
 
 
 def upload_dir(p):
-    if isinstance(p, basestring):
+    if isinstance(p, str):
         add_path = (p,) # Turn the single element into a tuple that can be
                         # joined into a full path
     elif isinstance(p, (list, tuple)):

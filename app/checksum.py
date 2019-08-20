@@ -1,8 +1,8 @@
 
 import hashlib
 
-import file
-import http
+from . import file
+from . import http
 
 
 DIGESTERS = {'sha256': lambda: hashlib.sha256() }
@@ -15,7 +15,7 @@ class ChecksumError(Exception):
 class UnsupportedChecksumMethod(ChecksumError):
     def __init__(self, method):
         self.method  = method
-        self.message = 'The checksum method "%s" is not supported; use one of: %s' % (method, DIGESTERS.keys())
+        self.message = 'The checksum method "%s" is not supported; use one of: %s' % (method, list(DIGESTERS.keys()))
     def __str__(self):
         return self.message
 
